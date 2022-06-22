@@ -19,7 +19,11 @@ const routes: Routes = [
     pathMatch: 'full',
     path: 'signup',
     component: SignupComponent
-  }
+  },
+  {
+    path: "alumnos",
+    loadChildren: () =>import("./alumnos/alumnos.module").then(m => m.AlumnosModule)
+  },
 ];
 
 @NgModule({
