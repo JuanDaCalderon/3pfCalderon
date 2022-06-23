@@ -4,33 +4,35 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { alumnosOutput } from 'src/app/other/users';
 
-import { AddAlumnoModalComponent } from '../add-alumno-modal/add-alumno-modal.component';
-import { EditAlumnoModalComponent } from '../edit-alumno-modal/edit-alumno-modal.component';
-import { DeleteAlumnoModalComponent } from '../delete-alumno-modal/delete-alumno-modal.component';
+import { AddCursoModalComponent } from '../add-curso-modal/add-curso-modal.component';
+import { EditCursoModalComponent } from '../edit-curso-modal/edit-curso-modal.component';
+import { DeleteCursoModalComponent } from '../delete-curso-modal/delete-curso-modal.component';
 
 import { MatTable, MatTableDataSource } from '@angular/material/table';
-import { AlumnosService } from '../alumnos.service';
 import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 
+import { cursos } from 'src/app/other/cursos';
+import { CursosService } from '../cursos.service';
+
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+  selector: 'app-dashboard-curso',
+  templateUrl: './dashboard-curso.component.html',
+  styleUrls: ['./dashboard-curso.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class DashboardComponent implements OnInit {
-  titulo: string = 'Alumnos';
-  data: alumnosOutput[] = [];
-  columnsToDisplay: string[] = ['select', 'id', 'nombre', 'curso', 'clases', 'avatar'];
-  selection = new SelectionModel<alumnosOutput>(true, []);
-  @ViewChild('alumnosTable') alumnosTable: MatTable<Element>;
+export class DashboardComponentCurso implements OnInit {
+  titulo: string = 'Cursos';
+  data: cursos[] = [];
+  columnsToDisplay: string[] = ['select', 'id', 'nombre del curso', 'clases'];
+  selection = new SelectionModel<cursos>(true, []);
+  @ViewChild('cursosTable') cursosTable: MatTable<Element>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  dataSource = new MatTableDataSource<alumnosOutput>(this.data);
+  dataSource = new MatTableDataSource<cursos>(this.data);
   isLoadingResults: boolean = true;
-  getAlumnosSub:Subscription;
-  getAlumnosData() {
-    this.getAlumnosSub = this.alumnoService.getAlumnos().subscribe(response => {
+  getCursosSub:Subscription;
+  getCursosData() {
+    this.getCursosSub = this.cursosService.getCursos().subscribe(response => {
       this.data = response;
       this.dataSource.data = response;
       this.isLoadingResults = false;
@@ -43,8 +45,8 @@ export class DashboardComponent implements OnInit {
     },1000);
   });
 
-  constructor(private alumnoService: AlumnosService, public dialog: MatDialog, private toastr: ToastrService) {
-    this.getAlumnosData();
+  constructor(private cursosService: CursosService, public dialog: MatDialog, private toastr: ToastrService) {
+    this.getCursosData();
   }
 
   ngOnInit(): void { }
@@ -67,7 +69,7 @@ export class DashboardComponent implements OnInit {
     this.selection.select(...this.data);
   }
 
-  checkboxLabel(row?: alumnosOutput): string {
+  checkboxLabel(row?: cursos): string {
     if (!row) {
       return `${this.isAllSelected() ? 'selected' : 'noSelected'} all`;
     }
@@ -75,62 +77,59 @@ export class DashboardComponent implements OnInit {
   }
 
   openAddDialog() {
-    this.dialog.open(AddAlumnoModalComponent, {
+    this.dialog.open(AddCursoModalComponent, {
       width: '600px',
       data: this.dialog,
     });
   }
 
   openEditDialog() {
-    let alumnoEdit = null;
+    let cursoEdit = null;
     if (this.selection.selected.length > 1 || this.selection.selected.length === 0) {
       let message: string;
-      (this.selection.selected.length === 0) ? message = 'No has seleccionado ningún alumno': message = 'Solo puedes editar un unico alumno';
+      (this.selection.selected.length === 0) ? message = 'No has seleccionado ningún curso': message = 'Solo puedes editar un unico curso';
       this.toastr.error(message);
     }
     else {
       if (this.selection.selected[0] !== undefined && this.selection.selected[0] !== null) {
-        let fullName = this.selection.selected[0].nombre.split(' ');
-        alumnoEdit = {
+        cursoEdit = {
           id: this.selection.selected[0].id,
-          firstName: fullName[0],
-          middleName: fullName[1],
-          lastName: fullName[2],
           curso: this.selection.selected[0].curso,
+          clases: this.selection.selected[0].clases
         }
       }
-      this.dialog.open(EditAlumnoModalComponent, {
+      this.dialog.open(EditCursoModalComponent, {
         width: '600px',
-        data: { dialog: this.dialog, alumnos: alumnoEdit },
+        data: { dialog: this.dialog, curso: cursoEdit },
       });
     }
   }
 
   openDeleteDialog() {
     if (this.selection.selected.length === 0) {
-      let message: string = 'No has seleccionado ningún alumno';
+      let message: string = 'No has seleccionado ningún curso';
       this.toastr.error(message);
     }
     else {
-      this.dialog.open(DeleteAlumnoModalComponent, {
+      this.dialog.open(DeleteCursoModalComponent, {
         width: '400px',
-        data: {dialog: this.dialog, alumnos: this.selection.selected},
+        data: { dialog: this.dialog, cursos: this.selection.selected },
       });
     }
   }
 
-  refrescarAlumnos() {
+  refrescarCursos() {
     this.selection.clear();
     this.isLoadingResults = true;
     this.data = [];
-    this.getAlumnosData();
-    this.alumnosTable.renderRows();
-    this.toastr.success('Alumnos actualizados Correctamente');
+    this.getCursosData();
+    this.cursosTable.renderRows();
+    this.toastr.success('Cursos actualizados Correctamente');
   }
 
   ngOnDestroy(): void {
-    if (this.getAlumnosSub) {
-      this.getAlumnosSub.unsubscribe();
+    if (this.getCursosSub) {
+      this.getCursosSub.unsubscribe();
     }
   }
 
